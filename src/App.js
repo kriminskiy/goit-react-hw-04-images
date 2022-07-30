@@ -25,7 +25,6 @@ function App() {
       return;
     }
     setStatus('pending');
-    feachCartImg();
   }, [searchName]);
 
   const openModal = imageUrl => {
