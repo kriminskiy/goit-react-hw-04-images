@@ -18,14 +18,28 @@ function App() {
   const [page, setPage] = useState(1);
   const [largeImageURL, setlargeImageURL] = useState({});
   const [showModal, setShowModal] = useState(false);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     if (!searchName) {
       return;
     }
+    const feachCartImg = () => {
+      searchbarAPI
+        .fetchSearchbar(searchName, page)
+        .then(data => {
+          setImages(images => [...images, ...data.hits]);
+          setStatus('resolved');
+          setData(data.totalHits);
+        })
+        .catch(error => {
+          setError(error);
+          setStatus('rejected');
+        });
+    };
+    feachCartImg();
     setStatus('pending');
-  }, [searchName]);
+  }, [searchName, page]);
 
   const openModal = imageUrl => {
     setShowModal(true);
@@ -36,23 +50,8 @@ function App() {
     setlargeImageURL('');
   };
 
-  const feachCartImg = () => {
-    searchbarAPI
-      .fetchSearchbar(searchName, page)
-      .then(data => {
-        setImages([...images, ...data.hits]);
-        setStatus('resolved');
-        setPage(page + 1);
-        setData(data);
-      })
-      .catch(error => {
-        setError(error);
-        setStatus('rejected');
-      });
-  };
-
   const handleLoadMore = () => {
-    feachCartImg();
+    setPage(page => page + 1);
   };
 
   const handleFormSubmit = searchName => {
@@ -85,7 +84,7 @@ function App() {
       {status === 'resolved' && (
         <div>
           <ImageGallery images={images} toggleModal={openModal} />
-          {images.length !== data.totalHits && (
+          {images.length !== data && (
             <Button onClickBtn={handleLoadMore} />
           )}{' '}
         </div>
